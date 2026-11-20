@@ -23,12 +23,18 @@ instance.interceptors.response.use(
     return config;
   },
   (error) => {
-    if (error.status === 401) {
-      if (window.location.pathname.includes('/admin/')) {
-        localStorage.clear();
-        window.location.href = '/login';
-      } else {
-        localStorage.removeItem('token');
+    const status = error.response?.status || error.status;
+
+    if (status === 401) {
+      const isAdminRoute = window.location.pathname.startsWith('/admin');
+      const isLoginPage =
+        window.location.pathname === '/login' ||
+        window.location.pathname === '/admin/login';
+
+      localStorage.clear();
+
+      if (!isLoginPage) {
+        window.location.href = isAdminRoute ? '/admin/login' : '/login';
       }
     }
 
