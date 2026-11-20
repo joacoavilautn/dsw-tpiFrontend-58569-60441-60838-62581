@@ -17,8 +17,15 @@ function AuthProvider({ children }) {
     setIsAuthenticated(false);
   };
 
-  const setAuthSession = (token) => {
+  const setAuthSession = (authData) => {
+    // authData puede ser el token directo o el objeto { token, role }
+    const token = typeof authData === 'object' ? authData.token : authData;
+    const role = typeof authData === 'object' ? authData.role : null;
+
     localStorage.setItem('token', token);
+    if (role) {
+      localStorage.setItem('role', role);
+    }
     setIsAuthenticated(true);
   };
 
@@ -34,49 +41,25 @@ function AuthProvider({ children }) {
     return { error: null };
   };
 
-  const singinAdmin = async (username, password) => {
-    if (
-      (username === 'admin' ||
-        username === 'admin@medportal.com' ||
-        username === 'admin@test.com') &&
-      password === 'admin123'
-    ) {
-      setAuthSession('mock-admin-token-12345');
-
-      return { error: null };
-    }
-
-    const { data, error } = await loginAdmin(username, password);
+  const singinAdmin = async (email, password) => {
+    const { data, error } = await loginAdmin(email, password);
 
     if (error) {
       return { error };
     }
 
     setAuthSession(data);
-
     return { error: null };
   };
 
-  const singinPatient = async (username, password) => {
-    if (
-      (username === 'paciente' ||
-        username === 'paciente@medportal.com' ||
-        username === 'paciente@test.com') &&
-      password === 'paciente123'
-    ) {
-      setAuthSession('mock-patient-token-67890');
-
-      return { error: null };
-    }
-
-    const { data, error } = await loginPatient(username, password);
+  const singinPatient = async (email, dni) => {
+    const { data, error } = await loginPatient(email, dni);
 
     if (error) {
       return { error };
     }
 
     setAuthSession(data);
-
     return { error: null };
   };
 
