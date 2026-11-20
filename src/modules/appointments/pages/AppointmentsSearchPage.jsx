@@ -1,93 +1,99 @@
-import { useState } from 'react';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
+import TablePagination from '../../shared/components/TablePagination';
+import useAppointmentsSearch from '../hooks/useAppointmentsSearch';
 
 function AppointmentsSearchPage() {
-  const [patientQuery, setPatientQuery] = useState('Johnathan Doe');
-  const [specialtyFilter, setSpecialtyFilter] = useState('Todas');
-  const [doctorFilter, setDoctorFilter] = useState('Todos');
-  const [dateFilter, setDateFilter] = useState('2023-10-24');
+  const {
+    appointments,
+    total,
+    pageNumber,
+    pageSize,
+    loading,
+    error,
+    patientQuery,
+    setPatientQuery,
+    specialtyFilter,
+    setSpecialtyFilter,
+    doctorFilter,
+    setDoctorFilter,
+    dateFilter,
+    setDateFilter,
+    specialtiesOptions,
+    doctorsOptions,
+    applyFilters,
+    handlePageChange,
+    handleClearFilters,
+  } = useAppointmentsSearch();
 
-  const appointmentsData = [
-    {
-      id: 1,
-      date: '24 Oct, 2023',
-      time: '10:30 AM',
-      department: 'Cardiology',
-      doctor: 'Dr. Robert Smith',
-      patient: 'Johnathan Doe',
-      dni: '40.123.456',
-      status: 'CONFIRMADO',
-      statusType: 'confirmed',
-      icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.75"
-            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-          />
-        </svg>
-      ),
-    },
-    {
-      id: 2,
-      date: '15 Oct, 2023',
-      time: '09:15 AM',
-      department: 'Neurology',
-      doctor: 'Dra. Garcia',
-      patient: 'Johnathan Doe',
-      dni: '40.123.456',
-      status: 'COMPLETADO',
-      statusType: 'completed',
-      icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.75"
-            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-          />
-        </svg>
-      ),
-    },
-    {
-      id: 3,
-      date: '05 Oct, 2023',
-      time: '11:00 AM',
-      department: 'General Checkup',
-      doctor: 'Dr. Miller',
-      patient: 'Johnathan Doe',
-      dni: '40.123.456',
-      status: 'CANCELADO',
-      statusType: 'cancelled',
-      icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.75"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      ),
-    },
-  ];
+  const totalPages = Math.ceil(total / pageSize) || 1;
+
+  const activeSpecialtyName =
+    specialtiesOptions.find((s) => s.id === specialtyFilter)?.name || '';
+
+  const activeDoctorName =
+    doctorsOptions.find((d) => d.id === doctorFilter)?.name || '';
+
+  const hasActiveFilters =
+    Boolean(patientQuery.trim()) ||
+    specialtyFilter !== 'Todas' ||
+    doctorFilter !== 'Todos' ||
+    Boolean(dateFilter);
+
+  const formatDate = (dateString) => {
+    if (!dateString) {
+      return '-';
+    }
+
+    try {
+      const d = new Date(dateString);
+
+      return d.toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const renderStatusBadge = (status) => {
+    const norm = (status || '').toUpperCase();
+
+    if (norm === 'BOOKED' || norm === 'CONFIRMADO') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-active-bg text-med-active-text">
+          <span className="w-1.5 h-1.5 rounded-full bg-med-active-text" />
+          Confirmado
+        </span>
+      );
+    }
+
+    if (norm === 'ATTENDED' || norm === 'COMPLETADO') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+          Completado
+        </span>
+      );
+    }
+
+    if (norm === 'CANCELLED' || norm === 'CANCELADO') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-danger-bg text-med-danger-text">
+          <span className="w-1.5 h-1.5 rounded-full bg-med-danger-text" />
+          Cancelado
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+        {status || 'Pendiente'}
+      </span>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -101,28 +107,23 @@ function AppointmentsSearchPage() {
         </p>
       </div>
 
+      {error && (
+        <div className="p-4 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl">
+          {error}
+        </div>
+      )}
+
       {/* Card Superior: Criterios de Búsqueda */}
       <Card className="p-6">
         <div className="flex items-center justify-between pb-4 border-b border-med-border-subtle">
           <h2 className="text-base font-bold text-med-primary-900">
             Criterios de Búsqueda
           </h2>
-          <div className="flex items-center gap-1.5 text-xs text-med-text-muted">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-            <span>Última actualización: hace un momento</span>
-          </div>
+          {loading && (
+            <span className="text-xs text-med-text-muted animate-pulse">
+              Consultando turnos...
+            </span>
+          )}
         </div>
 
         {/* Inputs de Filtros */}
@@ -169,9 +170,11 @@ function AppointmentsSearchPage() {
               className="w-full px-3 py-2 text-xs bg-white border border-med-border rounded-lg text-med-text-main focus:outline-none focus:ring-1 focus:ring-med-primary-600"
             >
               <option value="Todas">Todas las Especialidades</option>
-              <option value="Cardiology">Cardiology</option>
-              <option value="Neurology">Neurology</option>
-              <option value="General Checkup">General Checkup</option>
+              {specialtiesOptions.map((spec) => (
+                <option key={spec.id} value={spec.id}>
+                  {spec.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -186,9 +189,11 @@ function AppointmentsSearchPage() {
               className="w-full px-3 py-2 text-xs bg-white border border-med-border rounded-lg text-med-text-main focus:outline-none focus:ring-1 focus:ring-med-primary-600"
             >
               <option value="Todos">Todos los Doctores</option>
-              <option value="Dr. Robert Smith">Dr. Robert Smith</option>
-              <option value="Dra. Garcia">Dra. Garcia</option>
-              <option value="Dr. Miller">Dr. Miller</option>
+              {doctorsOptions.map((doc) => (
+                <option key={doc.id} value={doc.id}>
+                  {doc.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -208,8 +213,8 @@ function AppointmentsSearchPage() {
           {/* Botón Aplicar Filtros */}
           <div>
             <Button
-              onClick={() => alert('Filtros aplicados')}
-              className="w-full flex items-center justify-center gap-2 bg-med-primary-900 hover:bg-med-primary-800 text-white font-medium py-2 rounded-lg"
+              onClick={applyFilters}
+              className="w-full flex items-center justify-center gap-2 bg-med-primary-900 hover:bg-med-primary-800 text-white font-medium py-2 rounded-lg cursor-pointer"
             >
               <svg
                 className="w-4 h-4"
@@ -230,17 +235,37 @@ function AppointmentsSearchPage() {
         </div>
 
         {/* Chips de Filtros Activos */}
-        <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-med-border-subtle">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-sky-100/70 text-sky-800">
-            Paciente: Johnathan Doe
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-sky-100/70 text-sky-800">
-            DNI: 40.123.456
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-            Filtro Activo: Próximos 7 Días
-          </span>
-        </div>
+        {hasActiveFilters && (
+          <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-med-border-subtle">
+            {patientQuery.trim() && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-sky-100/70 text-sky-800">
+                Paciente / DNI: {patientQuery}
+              </span>
+            )}
+            {specialtyFilter !== 'Todas' && activeSpecialtyName && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-sky-100/70 text-sky-800">
+                Especialidad: {activeSpecialtyName}
+              </span>
+            )}
+            {doctorFilter !== 'Todos' && activeDoctorName && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-sky-100/70 text-sky-800">
+                Doctor: {activeDoctorName}
+              </span>
+            )}
+            {dateFilter && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Fecha: {dateFilter}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="text-xs text-med-text-sub hover:text-red-600 underline ml-2 cursor-pointer"
+            >
+              Limpiar filtros
+            </button>
+          </div>
+        )}
       </Card>
 
       {/* Card Inferior: Registros de Citas */}
@@ -264,99 +289,128 @@ function AppointmentsSearchPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-med-border-subtle">
-              {appointmentsData.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-gray-50/70 transition-colors"
-                >
-                  {/* Fecha y Hora */}
-                  <td className="px-6 py-4">
-                    <p className="font-bold text-med-primary-900 text-sm">
-                      {item.date}
-                    </p>
-                    <p className="text-xs text-med-text-muted mt-0.5">
-                      {item.time}
-                    </p>
-                  </td>
-
-                  {/* Departamento / Especialidad con Icono */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-med-primary-100 text-med-primary-700 flex items-center justify-center shrink-0">
-                        {item.icon}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-med-primary-900">
-                          {item.department}
-                        </p>
-                        <p className="text-xs text-med-text-muted">
-                          {item.doctor}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Paciente y DNI */}
-                  <td className="px-6 py-4">
-                    <p className="font-semibold text-med-text-main">
-                      {item.patient}
-                    </p>
-                    <p className="text-xs text-med-text-muted mt-0.5">
-                      DNI: {item.dni}
-                    </p>
-                  </td>
-
-                  {/* Estado (CONFIRMADO, COMPLETADO, CANCELADO) */}
-                  <td className="px-6 py-4 text-center">
-                    {item.statusType === 'confirmed' && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-active-bg text-med-active-text">
-                        <span className="w-1.5 h-1.5 rounded-full bg-med-active-text" />
-                        {item.status}
-                      </span>
-                    )}
-                    {item.statusType === 'completed' && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-                        {item.status}
-                      </span>
-                    )}
-                    {item.statusType === 'cancelled' && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-danger-bg text-med-danger-text">
-                        <span className="w-1.5 h-1.5 rounded-full bg-med-danger-text" />
-                        {item.status}
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Acciones */}
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() =>
-                        alert(`Ver detalle de cita de ${item.patient}`)
-                      }
-                      className="text-xs font-semibold text-med-primary-700 hover:text-med-primary-900 transition hover:underline"
-                    >
-                      Ver Detalle
-                    </button>
+              {appointments.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="px-6 py-12 text-center text-med-text-muted"
+                  >
+                    {loading
+                      ? 'Buscando citas...'
+                      : 'No se encontraron citas con los filtros seleccionados.'}
                   </td>
                 </tr>
-              ))}
+              ) : (
+                appointments.map((item) => {
+                  const appointmentId =
+                    item.appointmentsId || item.id || item.appointmentId;
+                  const doctorName =
+                    item.doctor?.name || item.doctorName || 'Médico Asignado';
+                  const departmentName =
+                    item.doctor?.specialty?.name ||
+                    item.department ||
+                    'General';
+                  const patientName =
+                    item.patient?.fullName ||
+                    item.patientName ||
+                    'Paciente Registrado';
+                  const patientDni = item.patient?.dni || item.dni || '-';
+                  const appointmentDate = item.slotDate || item.createdAt;
+                  const appointmentTime = item.startTime || item.time || '';
+
+                  return (
+                    <tr
+                      key={appointmentId}
+                      className="hover:bg-gray-50/70 transition-colors"
+                    >
+                      {/* Fecha y Hora */}
+                      <td className="px-6 py-4">
+                        <p className="font-bold text-med-primary-900 text-sm">
+                          {formatDate(appointmentDate)}
+                        </p>
+                        {appointmentTime && (
+                          <p className="text-xs text-med-text-muted mt-0.5">
+                            {appointmentTime}
+                          </p>
+                        )}
+                      </td>
+
+                      {/* Departamento / Especialidad con Icono */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-med-primary-100 text-med-primary-700 flex items-center justify-center shrink-0">
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="1.75"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                              />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-med-primary-900">
+                              {departmentName}
+                            </p>
+                            <p className="text-xs text-med-text-muted">
+                              {doctorName}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Paciente y DNI */}
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-med-text-main">
+                          {patientName}
+                        </p>
+                        <p className="text-xs text-med-text-muted mt-0.5">
+                          DNI: {patientDni}
+                        </p>
+                      </td>
+
+                      {/* Estado */}
+                      <td className="px-6 py-4 text-center">
+                        {renderStatusBadge(
+                          item.appointmentsStatus || item.status
+                        )}
+                      </td>
+
+                      {/* Acciones */}
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            alert(
+                              `Cita: ${departmentName} con ${doctorName}\nPaciente: ${patientName} (DNI: ${patientDni})\nMotivo: ${item.reason || 'Consulta médica'}`
+                            )
+                          }
+                          className="text-xs font-semibold text-med-primary-700 hover:text-med-primary-900 transition hover:underline cursor-pointer"
+                        >
+                          Ver Detalle
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Paginador inferior normalizado */}
-        <div className="p-4 bg-med-primary-50/50 border-t border-med-border flex items-center justify-between text-xs text-med-text-muted">
-          <span>Mostrando 3 de 42 registros</span>
-          <div className="flex items-center gap-1">
-            <button className="px-2.5 py-1 border border-med-border rounded bg-white text-med-text-sub hover:bg-gray-50">
-              ‹
-            </button>
-            <button className="px-2.5 py-1 border border-med-border rounded bg-white text-med-text-sub hover:bg-gray-50">
-              ›
-            </button>
-          </div>
-        </div>
+        <TablePagination
+          currentPage={pageNumber}
+          totalPages={totalPages}
+          totalItems={total}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+        />
       </Card>
     </div>
   );

@@ -1,36 +1,25 @@
 import { useNavigate } from 'react-router-dom';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
+import TablePagination from '../../shared/components/TablePagination';
+import useDashboardOverview from '../hooks/useDashboardOverview';
 
 function OverviewPage() {
   const navigate = useNavigate();
-
-  const previewDoctors = [
-    {
-      id: 1,
-      name: 'Dr. James Wilson',
-      specialty: 'Cardiología',
-      status: 'Activo',
-      statusType: 'active',
-      avatar: '👨‍⚕️',
-    },
-    {
-      id: 2,
-      name: 'Dr. Elena Rodriguez',
-      specialty: 'Neurología',
-      status: 'Activo',
-      statusType: 'active',
-      avatar: '👩‍⚕️',
-    },
-    {
-      id: 3,
-      name: 'Dr. Robert Chen',
-      specialty: 'Pediatría',
-      status: 'De Licencia',
-      statusType: 'leave',
-      avatar: '👨‍⚕️',
-    },
-  ];
+  const {
+    counts,
+    doctors,
+    totalDoctors,
+    pageSize,
+    pageIndex,
+    totalPages,
+    searchTerm,
+    isShortSearch,
+    loading,
+    error,
+    setPageIndex,
+    handleSearchChange,
+  } = useDashboardOverview();
 
   return (
     <div className="flex flex-col gap-8">
@@ -65,7 +54,13 @@ function OverviewPage() {
         </div>
       </div>
 
-      {/* Tarjetas de Métricas de la Imagen 2 */}
+      {error && (
+        <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600">
+          {error}
+        </div>
+      )}
+
+      {/* Tarjetas de Métricas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Doctores Activos */}
         <Card className="flex flex-col justify-between p-6">
@@ -86,7 +81,7 @@ function OverviewPage() {
               </svg>
             </div>
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-med-active-bg text-med-active-text">
-              +4 este mes
+              +{counts.addedThisMonth} este mes
             </span>
           </div>
 
@@ -95,7 +90,7 @@ function OverviewPage() {
               Doctores Activos
             </span>
             <p className="text-3xl sm:text-4xl font-extrabold text-med-primary-900 mt-1">
-              124
+              {counts.activeDoctors}
             </p>
           </div>
         </Card>
@@ -128,7 +123,7 @@ function OverviewPage() {
               Especialidades Activas
             </span>
             <p className="text-3xl sm:text-4xl font-extrabold text-med-primary-900 mt-1">
-              32
+              {counts.activeSpecialties}
             </p>
           </div>
         </Card>
@@ -161,7 +156,7 @@ function OverviewPage() {
               Turnos Confirmados Para Hoy
             </span>
             <p className="text-3xl sm:text-4xl font-extrabold text-med-primary-900 mt-1">
-              48
+              {counts.todayAppointments}
             </p>
           </div>
         </Card>
@@ -174,27 +169,36 @@ function OverviewPage() {
           <h2 className="text-base font-bold text-med-primary-900">
             Directorio de Profesionales Médicos
           </h2>
-          <div className="relative w-full sm:w-72">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-med-text-muted">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </span>
-            <input
-              type="text"
-              placeholder="Buscar por nombre..."
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-med-primary-50/70 border border-med-border rounded-lg text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-1 focus:ring-med-primary-600"
-            />
+          <div className="w-full sm:w-72">
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-med-text-muted">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </span>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Buscar por nombre..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-med-primary-50/70 border border-med-border rounded-lg text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-1 focus:ring-med-primary-600"
+              />
+            </div>
+            {isShortSearch && (
+              <p className="text-[11px] text-med-text-muted mt-1">
+                Ingresá al menos 3 caracteres para buscar
+              </p>
+            )}
           </div>
         </div>
 
@@ -210,61 +214,77 @@ function OverviewPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-med-border-subtle text-sm">
-              {previewDoctors.map((doc) => (
-                <tr
-                  key={doc.id}
-                  className="hover:bg-gray-50/70 transition-colors"
-                >
-                  <td className="px-6 py-4 flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-full bg-med-primary-100 flex items-center justify-center text-lg">
-                      {doc.avatar}
-                    </span>
-                    <span className="font-semibold text-med-primary-900">
-                      {doc.name}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-med-text-sub">
-                    {doc.specialty}
-                  </td>
-                  <td className="px-6 py-4">
-                    {doc.statusType === 'active' ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-active-bg text-med-active-text">
-                        <span className="w-1.5 h-1.5 rounded-full bg-med-active-text" />
-                        {doc.status}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-leave-bg text-med-leave-text">
-                        <span className="w-1.5 h-1.5 rounded-full bg-med-leave-text" />
-                        {doc.status}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => navigate('/admin/doctors')}
-                      className="text-xs font-semibold text-med-primary-700 hover:text-med-primary-900"
-                    >
-                      Ver Detalle
-                    </button>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-6 py-8 text-center text-xs text-med-text-muted"
+                  >
+                    Cargando profesionales...
                   </td>
                 </tr>
-              ))}
+              ) : doctors.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-6 py-8 text-center text-xs text-med-text-muted"
+                  >
+                    No se encontraron profesionales médicos.
+                  </td>
+                </tr>
+              ) : (
+                doctors.map((doc) => (
+                  <tr
+                    key={doc.id}
+                    className="hover:bg-gray-50/70 transition-colors"
+                  >
+                    <td className="px-6 py-4 flex items-center gap-3">
+                      <span className="w-9 h-9 rounded-full bg-med-primary-100 flex items-center justify-center text-lg">
+                        👨‍⚕️
+                      </span>
+                      <div>
+                        <span className="font-semibold text-med-primary-900 block">
+                          {doc.name}
+                        </span>
+                        {doc.licenseNumber && (
+                          <span className="text-[11px] text-med-text-muted">
+                            Matrícula: {doc.licenseNumber}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-med-text-sub">
+                      {doc.specialty?.name || 'Sin especialidad'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-active-bg text-med-active-text">
+                        <span className="w-1.5 h-1.5 rounded-full bg-med-active-text" />
+                        Activo
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => navigate('/admin/doctors')}
+                        className="text-xs font-semibold text-med-primary-700 hover:text-med-primary-900"
+                      >
+                        Ver Detalle
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Paginador inferior normalizado */}
-        <div className="p-4 bg-med-primary-50/50 border-t border-med-border flex items-center justify-between text-xs text-med-text-muted">
-          <span>Mostrando 3 de 124 registros</span>
-          <div className="flex items-center gap-1">
-            <button className="px-2.5 py-1 border border-med-border rounded bg-white text-med-text-sub hover:bg-gray-50">
-              ‹
-            </button>
-            <button className="px-2.5 py-1 border border-med-border rounded bg-white text-med-text-sub hover:bg-gray-50">
-              ›
-            </button>
-          </div>
-        </div>
+        <TablePagination
+          currentPage={pageIndex}
+          totalPages={totalPages}
+          totalItems={totalDoctors}
+          pageSize={pageSize}
+          onPageChange={setPageIndex}
+        />
       </Card>
     </div>
   );
