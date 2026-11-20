@@ -91,7 +91,9 @@ const usePatientBooking = () => {
         const grouped = {};
 
         available.forEach((slot) => {
-          const key = slot.slotDate;
+          const key = slot.slotDate
+            ? slot.slotDate.split('T')[0]
+            : slot.slotDate;
 
           if (!grouped[key]) {
             grouped[key] = [];

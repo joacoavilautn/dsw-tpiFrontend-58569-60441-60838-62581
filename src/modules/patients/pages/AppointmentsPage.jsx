@@ -18,7 +18,8 @@ function AppointmentsPage() {
       return '';
     }
 
-    const [year, month, day] = dateStr.split('-');
+    const cleanDate = dateStr.split('T')[0];
+    const [year, month, day] = cleanDate.split('-');
 
     return `${day}/${month}/${year}`;
   };
