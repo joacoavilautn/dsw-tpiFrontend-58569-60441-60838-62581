@@ -1,6 +1,5 @@
 import { instance } from '../../shared/api/axiosInstance';
 
-// pageIndex usa base 0, igual que el backend.
 export const getDoctors = async ({
   pageIndex = 0,
   pageSize = 10,

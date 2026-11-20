@@ -24,7 +24,7 @@ function useDoctors() {
   const [total, setTotal] = useState(0);
   const [specialties, setSpecialties] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [pageIndex, setPageIndex] = useState(0); // base 0 (backend)
+  const [pageIndex, setPageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
@@ -121,7 +121,6 @@ function useDoctors() {
     try {
       await deleteDoctor(id);
 
-      // Si se vació la última página, retrocede una.
       if (doctors.length === 1 && pageIndex > 0) {
         setPageIndex(pageIndex - 1);
       }

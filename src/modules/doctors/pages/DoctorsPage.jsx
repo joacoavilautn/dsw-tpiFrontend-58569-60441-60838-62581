@@ -3,6 +3,7 @@ import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
 import TablePagination from '../../shared/components/TablePagination';
 import CreateDoctorModal from '../components/CreateDoctorModal';
+import DoctorAvailabilityModal from '../components/DoctorAvailabilityModal';
 import useDoctors from '../hooks/useDoctors';
 
 function DoctorsPage() {
@@ -23,6 +24,7 @@ function DoctorsPage() {
     removeDoctor,
   } = useDoctors();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const [actionError, setActionError] = useState('');
 
   const handleDelete = async (doc) => {
@@ -37,7 +39,6 @@ function DoctorsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Título y Acciones de Cabecera */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-med-text-main">
@@ -49,7 +50,6 @@ function DoctorsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Barra de Búsqueda */}
           <div className="relative min-w-[240px] flex-1 sm:flex-initial">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-med-text-muted">
               <svg
@@ -76,9 +76,8 @@ function DoctorsPage() {
           </div>
 
           <Button
-            disabled
-            title="Disponible próximamente"
-            className="flex items-center gap-2 bg-med-primary-900 text-white opacity-50 cursor-not-allowed"
+            onClick={() => setShowAvailabilityModal(true)}
+            className="flex items-center gap-2 bg-med-primary-900 hover:bg-med-primary-800 text-white"
           >
             <svg
               className="w-4 h-4"
@@ -117,7 +116,6 @@ function DoctorsPage() {
         </p>
       )}
 
-      {/* Tabla Principal */}
       <Card className="p-0 overflow-hidden border-med-border">
         <div className="p-5 border-b border-med-border">
           <h2 className="text-base font-bold text-med-primary-900">
@@ -220,7 +218,6 @@ function DoctorsPage() {
           </table>
         </div>
 
-        {/* El backend pagina desde 0; TablePagination desde 1 */}
         <TablePagination
           currentPage={pageIndex + 1}
           totalPages={totalPages}
@@ -235,6 +232,12 @@ function DoctorsPage() {
           specialties={specialties}
           onSubmit={addDoctor}
           onClose={() => setShowCreateModal(false)}
+        />
+      )}
+
+      {showAvailabilityModal && (
+        <DoctorAvailabilityModal
+          onClose={() => setShowAvailabilityModal(false)}
         />
       )}
     </div>
