@@ -11,21 +11,51 @@ function AuthProvider({ children }) {
 
     return Boolean(token);
   });
+  const [role, setRole] = useState(() => localStorage.getItem('role') || null);
+  const [user, setUser] = useState(() => ({
+    email: localStorage.getItem('email') || null,
+    dni: localStorage.getItem('dni') || null,
+  }));
 
   const singout = () => {
     localStorage.clear();
     setIsAuthenticated(false);
+    setRole(null);
+    setUser({ email: null, dni: null });
   };
 
   const setAuthSession = (authData) => {
-    // authData puede ser el token directo o el objeto { token, role }
     const token = typeof authData === 'object' ? authData.token : authData;
-    const role = typeof authData === 'object' ? authData.role : null;
+    const nextRole = typeof authData === 'object' ? authData.role : null;
+    const email = typeof authData === 'object' ? authData.email : null;
+    const dni =
+      typeof authData === 'object' && authData.dni
+        ? String(authData.dni)
+        : null;
 
     localStorage.setItem('token', token);
-    if (role) {
-      localStorage.setItem('role', role);
+
+    if (nextRole) {
+      localStorage.setItem('role', nextRole);
+      setRole(nextRole);
+    } else {
+      localStorage.removeItem('role');
+      setRole(null);
     }
+
+    if (email) {
+      localStorage.setItem('email', email);
+    } else {
+      localStorage.removeItem('email');
+    }
+
+    if (dni) {
+      localStorage.setItem('dni', dni);
+    } else {
+      localStorage.removeItem('dni');
+    }
+
+    setUser({ email, dni });
     setIsAuthenticated(true);
   };
 
@@ -48,7 +78,8 @@ function AuthProvider({ children }) {
       return { error };
     }
 
-    setAuthSession(data);
+    setAuthSession({ ...data, email, dni: null });
+
     return { error: null };
   };
 
@@ -59,7 +90,8 @@ function AuthProvider({ children }) {
       return { error };
     }
 
-    setAuthSession(data);
+    setAuthSession({ ...data, email, dni: String(dni) });
+
     return { error: null };
   };
 
@@ -67,6 +99,8 @@ function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         isAuthenticated,
+        role,
+        user,
         singin,
         singinAdmin,
         singinPatient,

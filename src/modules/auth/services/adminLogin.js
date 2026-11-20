@@ -12,7 +12,9 @@ export const loginAdmin = async (email, password) => {
   } catch (error) {
     return {
       data: null,
-      error: error.response?.data?.message || 'Error al iniciar sesión como administrador',
+      error:
+        error.response?.data?.message ||
+        'Error al iniciar sesión como administrador',
     };
   }
 };
