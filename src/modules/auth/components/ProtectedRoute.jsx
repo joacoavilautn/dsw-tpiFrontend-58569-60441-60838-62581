@@ -1,19 +1,28 @@
 import { Navigate } from 'react-router-dom';
 import useAuth from '../hook/useAuth';
 
-function ProtectedRoute({ children, redirectTo = '/login', allowedRole }) {
-  const { isAuthenticated } = useAuth();
-  const currentRole = localStorage.getItem('role');
+function ProtectedRoute({
+  children,
+  redirectTo = '/login',
+  allowedRole,
+  allowedRoles,
+}) {
+  const { isAuthenticated, role } = useAuth();
+  const requiredRoles = allowedRoles || (allowedRole ? [allowedRole] : []);
 
-  // Si no está autenticado, lo manda al login
   if (!isAuthenticated) {
     return <Navigate to={redirectTo} replace />;
   }
 
-  // Si la ruta exige un rol específico (ej: ADMINISTRADOR) y el usuario no lo tiene
-  if (allowedRole && currentRole !== allowedRole) {
-    // Si es paciente y quiso entrar al admin, lo mandamos a su home '/'
-    return <Navigate to={currentRole === 'PACIENTE' ? '/' : '/admin/login'} replace />;
+  if (requiredRoles.length > 0 && !requiredRoles.includes(role)) {
+    const fallbackRoute =
+      role === 'PACIENTE'
+        ? '/'
+        : role === 'ADMINISTRADOR'
+          ? '/admin/home'
+          : redirectTo;
+
+    return <Navigate to={fallbackRoute} replace />;
   }
 
   return children;

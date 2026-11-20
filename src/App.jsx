@@ -36,11 +36,10 @@ const routes = [
   },
 
   // Rutas privadas de pacientes (URL base y turnos)
-
   {
     path: '/',
     element: (
-      <ProtectedRoute redirectTo="/login" allowedRole="PACIENTE">
+      <ProtectedRoute redirectTo="/login" allowedRoles={['PACIENTE']}>
         <PatientLayout />
       </ProtectedRoute>
     ),
@@ -57,11 +56,13 @@ const routes = [
   },
 
   // Rutas privadas de gestión clínica y administración
-
   {
     path: '/admin',
     element: (
-      <ProtectedRoute redirectTo="/admin/login" allowedRole="ADMINISTRADOR">
+      <ProtectedRoute
+        redirectTo="/admin/login"
+        allowedRoles={['ADMINISTRADOR']}
+      >
         <DashboardLayout />
       </ProtectedRoute>
     ),

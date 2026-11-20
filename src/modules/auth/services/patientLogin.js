@@ -12,7 +12,9 @@ export const loginPatient = async (email, dni) => {
   } catch (error) {
     return {
       data: null,
-      error: error.response?.data?.message || 'Error al iniciar sesión como paciente',
+      error:
+        error.response?.data?.message ||
+        'Error al iniciar sesión como paciente',
     };
   }
 };
