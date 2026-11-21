@@ -71,8 +71,9 @@ function AppointmentsPage() {
       {!loading && appointments.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {appointments.map((appt) => {
-            const statusLabel = STATUS_LABEL[appt.status] || appt.status;
-            const isConfirmed = appt.status === 'BOOKED';
+            const rawStatus = appt.appointmentsStatus || appt.status;
+            const statusLabel = STATUS_LABEL[rawStatus] || rawStatus;
+            const isConfirmed = rawStatus === 'BOOKED';
 
             return (
               <Card

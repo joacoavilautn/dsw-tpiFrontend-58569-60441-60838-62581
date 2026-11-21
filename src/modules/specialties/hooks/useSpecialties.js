@@ -8,7 +8,7 @@ import {
 export const useSpecialties = () => {
   const [specialties, setSpecialties] = useState([]);
   const [total, setTotal] = useState(0);
-  const [pageIndex, setPageIndex] = useState(0);
+  const [pageIndex, setPageIndex] = useState(1);
   const [pageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -55,7 +55,7 @@ export const useSpecialties = () => {
 
   const handleSearchChange = (value) => {
     setSearchTerm(value);
-    setPageIndex(0);
+    setPageIndex(1);
   };
 
   const handleCreateSpecialty = async (formData) => {
@@ -90,7 +90,12 @@ export const useSpecialties = () => {
 
     try {
       await deleteSpecialty(id);
-      await loadSpecialties();
+
+      if (specialties.length === 1 && pageIndex > 1) {
+        setPageIndex(pageIndex - 1);
+      } else {
+        await loadSpecialties();
+      }
 
       return { success: true };
     } catch (err) {

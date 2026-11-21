@@ -219,11 +219,11 @@ function DoctorsPage() {
         </div>
 
         <TablePagination
-          currentPage={pageIndex + 1}
+          currentPage={pageIndex}
           totalPages={totalPages}
           totalItems={total}
           pageSize={pageSize}
-          onPageChange={(page) => setPageIndex(page - 1)}
+          onPageChange={setPageIndex}
         />
       </Card>
 

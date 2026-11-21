@@ -24,7 +24,7 @@ function useDoctors() {
   const [total, setTotal] = useState(0);
   const [specialties, setSpecialties] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [pageIndex, setPageIndex] = useState(0);
+  const [pageIndex, setPageIndex] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
@@ -100,13 +100,13 @@ function useDoctors() {
 
   const handleSearchChange = (value) => {
     setSearchTerm(value);
-    setPageIndex(0);
+    setPageIndex(1);
   };
 
   const addDoctor = async (values) => {
     try {
       await createDoctor(values);
-      setPageIndex(0);
+      setPageIndex(1);
       reload();
 
       return { error: null };
@@ -121,7 +121,7 @@ function useDoctors() {
     try {
       await deleteDoctor(id);
 
-      if (doctors.length === 1 && pageIndex > 0) {
+      if (doctors.length === 1 && pageIndex > 1) {
         setPageIndex(pageIndex - 1);
       }
 

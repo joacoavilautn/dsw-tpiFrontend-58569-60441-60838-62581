@@ -201,11 +201,11 @@ function SpecialtiesPage() {
 
         {/* Paginador compartido */}
         <TablePagination
-          currentPage={pageIndex + 1}
+          currentPage={pageIndex}
           totalPages={totalPages}
           totalItems={total}
           pageSize={pageSize}
-          onPageChange={(newPage) => setPageIndex(newPage - 1)}
+          onPageChange={setPageIndex}
         />
       </Card>
 
