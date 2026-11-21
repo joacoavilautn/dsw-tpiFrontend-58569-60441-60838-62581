@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
+import { formatDate } from '../../shared/helpers/formatDate';
 import usePatientAppointments from '../hooks/usePatientAppointments';
 
 const STATUS_LABEL = {
@@ -12,17 +13,6 @@ function AppointmentsPage() {
 
   const { appointments, loading, error, handleCancelAppointment } =
     usePatientAppointments();
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) {
-      return '';
-    }
-
-    const cleanDate = dateStr.split('T')[0];
-    const [year, month, day] = cleanDate.split('-');
-
-    return `${day}/${month}/${year}`;
-  };
 
   const onCancelClick = (id) => {
     const confirmed = window.confirm(
