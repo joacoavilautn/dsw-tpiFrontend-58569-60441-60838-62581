@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import useAuth from '../../auth/hook/useAuth';
+import useAuth from '../../auth/hooks/useAuth';
 import {
   getSpecialtiesOptions,
   getDoctorsOptions,
@@ -119,7 +119,7 @@ const usePatientBooking = () => {
   };
 
   const confirmBooking = async ({ reason }) => {
-    const dni = user?.dni || localStorage.getItem('dni');
+    const dni = user?.dni;
 
     if (!selectedDoctorId || !selectedSlotId || !dni) {
       setBookingError('Faltan datos para confirmar el turno.');

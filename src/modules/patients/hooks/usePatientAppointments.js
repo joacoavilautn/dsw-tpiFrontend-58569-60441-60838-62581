@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import useAuth from '../../auth/hook/useAuth';
+import useAuth from '../../auth/hooks/useAuth';
 import {
   getPatientAppointments,
   cancelAppointment,
@@ -8,7 +8,7 @@ import {
 const usePatientAppointments = () => {
   const { user } = useAuth();
 
-  const dni = user?.dni || localStorage.getItem('dni');
+  const dni = user?.dni;
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
