@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
+import { formatDate } from '../../shared/helpers/formatDate';
 import usePatientAppointments from '../hooks/usePatientAppointments';
 
 const STATUS_LABEL = {
@@ -12,17 +13,6 @@ function AppointmentsPage() {
 
   const { appointments, loading, error, handleCancelAppointment } =
     usePatientAppointments();
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) {
-      return '';
-    }
-
-    const cleanDate = dateStr.split('T')[0];
-    const [year, month, day] = cleanDate.split('-');
-
-    return `${day}/${month}/${year}`;
-  };
 
   const onCancelClick = (id) => {
     const confirmed = window.confirm(
@@ -71,8 +61,9 @@ function AppointmentsPage() {
       {!loading && appointments.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {appointments.map((appt) => {
-            const statusLabel = STATUS_LABEL[appt.status] || appt.status;
-            const isConfirmed = appt.status === 'BOOKED';
+            const rawStatus = appt.appointmentsStatus || appt.status;
+            const statusLabel = STATUS_LABEL[rawStatus] || rawStatus;
+            const isConfirmed = rawStatus === 'BOOKED';
 
             return (
               <Card

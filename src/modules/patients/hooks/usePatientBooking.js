@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import useAuth from '../../auth/hook/useAuth';
+import useAuth from '../../auth/hooks/useAuth';
 import {
   getSpecialtiesOptions,
   getDoctorsOptions,
@@ -25,6 +25,7 @@ const usePatientBooking = () => {
   const [error, setError] = useState('');
   const [bookingError, setBookingError] = useState('');
   const [confirmedAppointment, setConfirmedAppointment] = useState(null);
+  const [slotsReloadKey, setSlotsReloadKey] = useState(0);
 
   useEffect(() => {
     setLoadingSpecialties(true);
@@ -110,7 +111,7 @@ const usePatientBooking = () => {
       .finally(() => {
         setLoadingSlots(false);
       });
-  }, [selectedDoctorId]);
+  }, [selectedDoctorId, slotsReloadKey]);
 
   const handleSelectSlot = (slot) => {
     setSelectedSlotId(slot.id);
@@ -118,7 +119,7 @@ const usePatientBooking = () => {
   };
 
   const confirmBooking = async ({ reason }) => {
-    const dni = user?.dni || localStorage.getItem('dni');
+    const dni = user?.dni;
 
     if (!selectedDoctorId || !selectedSlotId || !dni) {
       setBookingError('Faltan datos para confirmar el turno.');
@@ -138,9 +139,10 @@ const usePatientBooking = () => {
       });
 
       setConfirmedAppointment(result);
+      setSlotsReloadKey((k) => k + 1);
     } catch (err) {
       const status = err?.response?.status;
-      const code = err?.response?.data?.code;
+      const code = err?.response?.data?.errorCode || err?.response?.data?.code;
 
       if (
         status === 409 &&
@@ -150,7 +152,10 @@ const usePatientBooking = () => {
           'Este turno ya fue ocupado por otro paciente. Por favor, seleccione otro horario.'
         );
       } else {
-        setBookingError('No se pudo confirmar el turno. Intente nuevamente.');
+        setBookingError(
+          err?.response?.data?.message ||
+            'No se pudo confirmar el turno. Intente nuevamente.'
+        );
       }
     } finally {
       setBookingLoading(false);

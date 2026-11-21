@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import useAuth from '../hook/useAuth';
+import useAuth from '../hooks/useAuth';
 import { frontendErrorMessage } from '../helpers/backendError';
 
 function AdminLoginPage() {
@@ -113,6 +113,10 @@ function AdminLoginPage() {
                   }`}
                   {...register('username', {
                     required: 'El correo electrónico es obligatorio',
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: 'Ingrese un correo electrónico válido',
+                    },
                   })}
                 />
               </div>

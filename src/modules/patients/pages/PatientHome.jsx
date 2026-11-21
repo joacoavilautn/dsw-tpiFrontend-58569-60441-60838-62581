@@ -2,6 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
+import { formatDate } from '../../shared/helpers/formatDate';
+import AvailableSlotsGrid from '../components/AvailableSlotsGrid';
+import BookingConfirmationModal from '../components/BookingConfirmationModal';
 import usePatientBooking from '../hooks/usePatientBooking';
 
 function PatientHome() {
@@ -44,19 +47,6 @@ function PatientHome() {
   const handleReserveAnother = () => {
     resetBooking();
     reset();
-  };
-
-  const sortedDays = Object.keys(slotsByDay).sort();
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) {
-      return '';
-    }
-
-    const cleanDate = dateStr.split('T')[0];
-    const [year, month, day] = cleanDate.split('-');
-
-    return `${day}/${month}/${year}`;
   };
 
   return (
@@ -177,118 +167,12 @@ function PatientHome() {
 
       {/* 3. Selector Semanal de Disponibilidad */}
       {selectedDoctorId && (
-        <Card className="p-5 sm:p-6 border-med-border">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-med-border-subtle">
-            <div className="flex items-center gap-3">
-              <span className="font-bold text-sm sm:text-base text-med-primary-900">
-                Turnos disponibles
-              </span>
-            </div>
-
-            <div className="flex items-center gap-4 text-xs text-med-text-sub">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-med-primary-900" />
-                Disponible
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                Seleccionado
-              </span>
-            </div>
-          </div>
-
-          {loadingSlots && (
-            <p className="text-xs text-med-text-muted text-center py-8">
-              Cargando horarios...
-            </p>
-          )}
-
-          {!loadingSlots && sortedDays.length === 0 && (
-            <p className="text-xs text-med-text-muted text-center py-8">
-              No hay turnos disponibles para este médico.
-            </p>
-          )}
-
-          {/* VISTA DESKTOP: Grid semanal (visible en sm+) */}
-          {!loadingSlots && sortedDays.length > 0 && (
-            <div className="hidden sm:grid sm:grid-cols-5 gap-3 pt-5">
-              {sortedDays.map((dateKey) => {
-                const daySlots = slotsByDay[dateKey] || [];
-
-                return (
-                  <div
-                    key={dateKey}
-                    className="flex flex-col items-center gap-3"
-                  >
-                    <div className="text-center">
-                      <span className="text-[11px] font-bold text-med-text-sub uppercase">
-                        {formatDate(dateKey)}
-                      </span>
-                    </div>
-
-                    <div className="w-full flex flex-col gap-2">
-                      {daySlots.map((slot) => {
-                        const isSelected = selectedSlotId === slot.id;
-
-                        return (
-                          <button
-                            key={slot.id}
-                            type="button"
-                            onClick={() => handleSelectSlot(slot)}
-                            className={`w-full py-2 px-3 text-xs font-semibold rounded-lg border transition-all text-center ${
-                              isSelected
-                                ? 'bg-emerald-400 text-white border-emerald-400 shadow-sm'
-                                : 'bg-white border-med-border text-med-primary-900 hover:border-med-primary-600 hover:bg-med-primary-50/50'
-                            }`}
-                          >
-                            {slot.startTime}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* VISTA MOBILE: bloques de horarios (visible en mobile) */}
-          {!loadingSlots && sortedDays.length > 0 && (
-            <div className="block sm:hidden pt-4 space-y-4">
-              {sortedDays.map((dateKey) => {
-                const daySlots = slotsByDay[dateKey] || [];
-
-                return (
-                  <div key={dateKey}>
-                    <span className="block text-xs font-bold text-med-text-sub mb-2">
-                      {formatDate(dateKey)}
-                    </span>
-                    <div className="grid grid-cols-3 gap-2">
-                      {daySlots.map((slot) => {
-                        const isSelected = selectedSlotId === slot.id;
-
-                        return (
-                          <button
-                            key={slot.id}
-                            type="button"
-                            onClick={() => handleSelectSlot(slot)}
-                            className={`py-2 px-2 text-xs font-semibold rounded-lg border transition-all ${
-                              isSelected
-                                ? 'border-2 border-med-primary-900 bg-white text-med-primary-900 font-bold shadow-xs'
-                                : 'bg-white border-med-border text-med-text-main hover:bg-gray-50'
-                            }`}
-                          >
-                            {slot.startTime}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Card>
+        <AvailableSlotsGrid
+          slotsByDay={slotsByDay}
+          selectedSlotId={selectedSlotId}
+          loading={loadingSlots}
+          onSelectSlot={handleSelectSlot}
+        />
       )}
 
       {/* 4. Banner de Resumen + Formulario de Motivo + Confirmación */}
@@ -379,57 +263,13 @@ function PatientHome() {
       )}
 
       {/* Modal de Confirmación Exitosa */}
-      {confirmedAppointment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 text-center">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-              ✓
-            </div>
-            <h3 className="text-xl font-bold text-med-primary-900">
-              ¡Turno Confirmado con Éxito!
-            </h3>
-            <p className="text-xs text-med-text-sub mt-2 leading-relaxed">
-              Tu turno ha sido reservado para el{' '}
-              <strong className="text-med-text-main">
-                {formatDate(selectedSlot?.slotDate)} a las{' '}
-                {selectedSlot?.startTime} hs
-              </strong>
-              .
-            </p>
-
-            <div className="mt-5 p-3.5 bg-med-primary-50 border border-med-primary-200/60 rounded-xl text-xs text-med-primary-900 text-left space-y-1">
-              <p>
-                <strong>Médico:</strong>{' '}
-                {confirmedAppointment?.doctor?.name || selectedDoctor?.name}
-              </p>
-              <p>
-                <strong>Especialidad:</strong>{' '}
-                {confirmedAppointment?.doctor?.specialty?.name ||
-                  selectedDoctor?.specialtyName}
-              </p>
-              <p>
-                <strong>Motivo:</strong> {confirmedAppointment?.reason}
-              </p>
-            </div>
-
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <Button
-                className="w-full text-xs py-2.5"
-                onClick={() => navigate('/appointments')}
-              >
-                Ver Mis Turnos
-              </Button>
-              <Button
-                variant="secondary"
-                className="w-full text-xs py-2.5"
-                onClick={handleReserveAnother}
-              >
-                Reservar Otro
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <BookingConfirmationModal
+        appointment={confirmedAppointment}
+        doctor={selectedDoctor}
+        slot={selectedSlot}
+        onViewAppointments={() => navigate('/appointments')}
+        onReserveAnother={handleReserveAnother}
+      />
     </div>
   );
 }

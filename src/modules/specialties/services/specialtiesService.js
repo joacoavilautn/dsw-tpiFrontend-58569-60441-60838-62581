@@ -1,7 +1,7 @@
 import { instance } from '../../shared/api/axiosInstance';
 
 export const getSpecialties = async ({
-  pageIndex = 0,
+  pageIndex = 1,
   pageSize = 10,
   name = '',
 } = {}) => {

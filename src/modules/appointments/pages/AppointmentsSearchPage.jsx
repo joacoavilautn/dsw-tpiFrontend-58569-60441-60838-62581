@@ -1,9 +1,14 @@
+import { useState } from 'react';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
+import Modal from '../../shared/components/Modal';
 import TablePagination from '../../shared/components/TablePagination';
+import { formatDate } from '../../shared/helpers/formatDate';
+import AppointmentStatusBadge from '../components/AppointmentStatusBadge';
 import useAppointmentsSearch from '../hooks/useAppointmentsSearch';
 
 function AppointmentsSearchPage() {
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const {
     appointments,
     total,
@@ -39,61 +44,6 @@ function AppointmentsSearchPage() {
     specialtyFilter !== 'Todas' ||
     doctorFilter !== 'Todos' ||
     Boolean(dateFilter);
-
-  const formatDate = (dateString) => {
-    if (!dateString) {
-      return '-';
-    }
-
-    try {
-      const d = new Date(dateString);
-
-      return d.toLocaleDateString('es-AR', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
-  const renderStatusBadge = (status) => {
-    const norm = (status || '').toUpperCase();
-
-    if (norm === 'BOOKED' || norm === 'CONFIRMADO') {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-active-bg text-med-active-text">
-          <span className="w-1.5 h-1.5 rounded-full bg-med-active-text" />
-          Confirmado
-        </span>
-      );
-    }
-
-    if (norm === 'ATTENDED' || norm === 'COMPLETADO') {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-          Completado
-        </span>
-      );
-    }
-
-    if (norm === 'CANCELLED' || norm === 'CANCELADO') {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-danger-bg text-med-danger-text">
-          <span className="w-1.5 h-1.5 rounded-full bg-med-danger-text" />
-          Cancelado
-        </span>
-      );
-    }
-
-    return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
-        {status || 'Pendiente'}
-      </span>
-    );
-  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -326,7 +276,7 @@ function AppointmentsSearchPage() {
                       {/* Fecha y Hora */}
                       <td className="px-6 py-4">
                         <p className="font-bold text-med-primary-900 text-sm">
-                          {formatDate(appointmentDate)}
+                          {formatDate(appointmentDate) || '-'}
                         </p>
                         {appointmentTime && (
                           <p className="text-xs text-med-text-muted mt-0.5">
@@ -376,9 +326,9 @@ function AppointmentsSearchPage() {
 
                       {/* Estado */}
                       <td className="px-6 py-4 text-center">
-                        {renderStatusBadge(
-                          item.appointmentsStatus || item.status
-                        )}
+                        <AppointmentStatusBadge
+                          status={item.appointmentsStatus || item.status}
+                        />
                       </td>
 
                       {/* Acciones */}
@@ -386,9 +336,16 @@ function AppointmentsSearchPage() {
                         <button
                           type="button"
                           onClick={() =>
-                            alert(
-                              `Cita: ${departmentName} con ${doctorName}\nPaciente: ${patientName} (DNI: ${patientDni})\nMotivo: ${item.reason || 'Consulta médica'}`
-                            )
+                            setSelectedAppointment({
+                              departmentName,
+                              doctorName,
+                              patientName,
+                              patientDni,
+                              appointmentDate,
+                              appointmentTime,
+                              status: item.appointmentsStatus || item.status,
+                              reason: item.reason,
+                            })
                           }
                           className="text-xs font-semibold text-med-primary-700 hover:text-med-primary-900 transition hover:underline cursor-pointer"
                         >
@@ -412,6 +369,58 @@ function AppointmentsSearchPage() {
           onPageChange={handlePageChange}
         />
       </Card>
+
+      <Modal
+        isOpen={Boolean(selectedAppointment)}
+        maxWidth="max-w-md"
+        className="p-6"
+      >
+        {selectedAppointment && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-3 border-b border-med-border pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-med-primary-900">
+                  Detalle de la Cita
+                </h3>
+                <p className="text-xs text-med-text-sub mt-0.5">
+                  {selectedAppointment.departmentName}
+                </p>
+              </div>
+              <AppointmentStatusBadge status={selectedAppointment.status} />
+            </div>
+
+            <div className="space-y-2 text-sm text-med-text-main">
+              <p>
+                <strong>Doctor:</strong> {selectedAppointment.doctorName}
+              </p>
+              <p>
+                <strong>Paciente:</strong> {selectedAppointment.patientName}{' '}
+                (DNI: {selectedAppointment.patientDni})
+              </p>
+              <p>
+                <strong>Fecha:</strong>{' '}
+                {formatDate(selectedAppointment.appointmentDate) || '-'}{' '}
+                {selectedAppointment.appointmentTime
+                  ? `a las ${selectedAppointment.appointmentTime} hs`
+                  : ''}
+              </p>
+              <p>
+                <strong>Motivo:</strong>{' '}
+                {selectedAppointment.reason || 'Consulta médica'}
+              </p>
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-med-border">
+              <Button
+                variant="outline"
+                onClick={() => setSelectedAppointment(null)}
+              >
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

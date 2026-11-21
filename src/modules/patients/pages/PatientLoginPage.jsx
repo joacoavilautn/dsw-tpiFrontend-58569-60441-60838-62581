@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../shared/components/Button';
-import useAuth from '../../auth/hook/useAuth';
+import useAuth from '../../auth/hooks/useAuth';
 import { frontendErrorMessage } from '../../auth/helpers/backendError';
 
 function PatientLoginPage() {
@@ -33,6 +33,7 @@ function PatientLoginPage() {
 
         return;
       }
+
       navigate('/');
     } catch (error) {
       if (error?.response?.data?.code) {
@@ -103,12 +104,17 @@ function PatientLoginPage() {
               <input
                 type="email"
                 placeholder="paciente@medportal.com"
-                className={`w-full border rounded-lg pl-10 pr-3.5 py-2.5 text-sm bg-white text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-2 focus:ring-med-primary-600 focus:border-transparent ${errors.username
+                className={`w-full border rounded-lg pl-10 pr-3.5 py-2.5 text-sm bg-white text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-2 focus:ring-med-primary-600 focus:border-transparent ${
+                  errors.username
                     ? 'border-red-400 bg-red-50/20'
                     : 'border-med-border'
-                  }`}
+                }`}
                 {...register('username', {
                   required: 'El correo electrónico es obligatorio',
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: 'Ingrese un correo electrónico válido',
+                  },
                 })}
               />
             </div>
@@ -143,12 +149,18 @@ function PatientLoginPage() {
               <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
-                className={`w-full border rounded-lg pl-10 pr-10 py-2.5 text-sm bg-white text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-2 focus:ring-med-primary-600 focus:border-transparent ${errors.password
+                className={`w-full border rounded-lg pl-10 pr-10 py-2.5 text-sm bg-white text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-2 focus:ring-med-primary-600 focus:border-transparent ${
+                  errors.password
                     ? 'border-red-400 bg-red-50/20'
                     : 'border-med-border'
-                  }`}
+                }`}
                 {...register('password', {
                   required: 'El DNI es obligatorio',
+                  pattern: {
+                    value: /^\d{7,10}$/,
+                    message:
+                      'El DNI debe contener entre 7 y 10 dígitos numéricos',
+                  },
                 })}
               />
               <button
@@ -209,8 +221,8 @@ function PatientLoginPage() {
           <div className="bg-med-primary-50 border border-med-primary-200/60 rounded-lg p-2.5 text-center text-xs text-med-primary-900">
             <span className="font-semibold">Credenciales de prueba:</span>
             <br />
-            Email: <code>paciente@medportal.com</code> | Clave:{' '}
-            <code>paciente123</code>
+            Email: <code>paciente@medportal.com</code> | DNI:{' '}
+            <code>12345678</code>
           </div>
 
           {errorMessage && (
