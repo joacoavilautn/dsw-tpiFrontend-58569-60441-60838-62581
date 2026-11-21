@@ -113,6 +113,10 @@ function AdminLoginPage() {
                   }`}
                   {...register('username', {
                     required: 'El correo electrónico es obligatorio',
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: 'Ingrese un correo electrónico válido',
+                    },
                   })}
                 />
               </div>
